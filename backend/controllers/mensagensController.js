@@ -10,17 +10,32 @@ function mesmoId(a, b) {
   return a.toString() === b.toString()
 }
 
-function formatarMensagem(mensagem, anexo = null, usuarioId = null) {
-  let lidoEm = null
-
-  if (usuarioId && Array.isArray(mensagem.lido_por)) {
-    const leitura = mensagem.lido_por.find((item) =>
-      mesmoId(item.usuario, usuarioId)
-    )
-
-    lidoEm = leitura?.lido_em || null
+function obterLeituraDaMensagem(mensagem, usuarioAtualId) {
+  if (!Array.isArray(mensagem.lido_por)) {
+    return null
   }
 
+  const mensagemFoiEnviadaPeloUsuarioAtual = mesmoId(
+    mensagem.remetente?._id || mensagem.remetente,
+    usuarioAtualId
+  )
+
+  if (mensagemFoiEnviadaPeloUsuarioAtual) {
+    const leituraDoDestinatario = mensagem.lido_por.find((item) => {
+      return !mesmoId(item.usuario, usuarioAtualId)
+    })
+
+    return leituraDoDestinatario?.lido_em || null
+  }
+
+  const minhaLeitura = mensagem.lido_por.find((item) => {
+    return mesmoId(item.usuario, usuarioAtualId)
+  })
+
+  return minhaLeitura?.lido_em || null
+}
+
+function formatarMensagem(mensagem, anexo = null, usuarioAtualId = null) {
   return {
     id: mensagem._id.toString(),
     conversa_id: mensagem.conversa?.toString(),
@@ -29,7 +44,9 @@ function formatarMensagem(mensagem, anexo = null, usuarioId = null) {
     remetente_nome: mensagem.remetente?.nome || 'Usuário',
     conteudo: mensagem.conteudo,
     enviado_em: mensagem.createdAt,
-    lido_em: lidoEm,
+    lido_em: usuarioAtualId
+      ? obterLeituraDaMensagem(mensagem, usuarioAtualId)
+      : null,
     anexo: anexo
       ? {
         id: anexo._id.toString(),
@@ -125,7 +142,38 @@ async function listarHistorico(req, res) {
       })
     }
 
-    const mensagens = await Mensagem.find({
+    let mensagens = await Mensagem.find({
+      conversa: conversaId,
+      excluida: false,
+    })
+      .populate('remetente', 'nome email')
+      .sort({ createdAt: 1 })
+
+    const mensagensParaMarcarComoLidas = mensagens.filter((mensagem) => {
+      const enviadaPorOutroUsuario = !mesmoId(
+        mensagem.remetente._id,
+        usuarioId
+      )
+
+      const jaFoiLidaPorMim = mensagem.lido_por.some((item) =>
+        mesmoId(item.usuario, usuarioId)
+      )
+
+      return enviadaPorOutroUsuario && !jaFoiLidaPorMim
+    })
+
+    await Promise.all(
+      mensagensParaMarcarComoLidas.map((mensagem) => {
+        mensagem.lido_por.push({
+          usuario: usuarioId,
+          lido_em: new Date(),
+        })
+
+        return mensagem.save()
+      })
+    )
+
+    mensagens = await Mensagem.find({
       conversa: conversaId,
       excluida: false,
     })
@@ -139,27 +187,6 @@ async function listarHistorico(req, res) {
         })
 
         return formatarMensagem(mensagem, anexo, usuarioId)
-      })
-    )
-
-    const mensagensParaMarcarComoLidas = mensagens.filter((mensagem) => {
-      const enviadaPorOutroUsuario = !mesmoId(mensagem.remetente._id, usuarioId)
-
-      const jaFoiLida = mensagem.lido_por.some((item) =>
-        mesmoId(item.usuario, usuarioId)
-      )
-
-      return enviadaPorOutroUsuario && !jaFoiLida
-    })
-
-    await Promise.all(
-      mensagensParaMarcarComoLidas.map((mensagem) => {
-        mensagem.lido_por.push({
-          usuario: usuarioId,
-          lido_em: new Date(),
-        })
-
-        return mensagem.save()
       })
     )
 
@@ -222,12 +249,7 @@ async function enviar(req, res) {
       conversa: conversa._id,
       remetente: remetenteId,
       conteudo,
-      lido_por: [
-        {
-          usuario: remetenteId,
-          lido_em: new Date(),
-        },
-      ],
+      lido_por: [],
     })
 
     conversa.updatedAt = new Date()

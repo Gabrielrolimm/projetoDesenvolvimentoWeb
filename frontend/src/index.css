@@ -1,0 +1,164 @@
+body {
+  background: #f4f6f9;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+  width: 230px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #ffffff;
+  border-right: 1px solid #ddd;
+  z-index: 1000;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.sidebar h4 {
+  margin-top: 10px;
+}
+
+.sidebar .nav-link {
+  color: #333;
+  border-radius: 6px;
+}
+
+.sidebar .nav-link:hover {
+  background: #f0f0f0;
+}
+
+.sidebar .nav-link.active {
+  background: #212529;
+  color: #fff;
+}
+
+/* CONTEÚDO PRINCIPAL */
+
+.main-content {
+  margin-left: 230px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* TOPBAR */
+
+.topbar {
+  height: 60px;
+  background: #212529;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 18px;
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ÁREA PRINCIPAL */
+
+.container,
+.container-fluid {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+/* CHAT */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* MENSAGENS */
+
+.msg-user {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.msg-other {
+  margin-bottom: 10px;
+}
+
+.msg-user span {
+  background: #212529;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.msg-other span {
+  background: #e9ecef;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* BARRA DE ENVIO */
+
+.chat-input {
+  margin-bottom: 35px;
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/* LISTA DE CONVERSAS */
+
+.conversation-item {
+  margin-bottom: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+  padding: 10px;
+}
+
+.conversation-item:hover {
+  background: #f5f5f5;
+}
+
+/* AVATAR */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+/* INFO CONVERSA */
+
+.conversation-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.last-message {
+  font-size: 12px;
+  color: gray;
+  margin: 0;
+}

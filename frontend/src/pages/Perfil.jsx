@@ -76,6 +76,7 @@ export default function Perfil() {
 
   function handleSair() {
     localStorage.removeItem('usuario')
+    localStorage.removeItem('token')
     navigate('/')
   }
 

@@ -35,7 +35,7 @@ export default function Usuarios() {
       await api.put(`/usuarios/${editando.id}`, {
         nome: editando.nome,
         email: editando.email,
-        perfil_id: editando.perfil === 'admin' ? 1 : 2,
+        perfil: editando.perfil,
         ativo: editando.ativo,
       })
 

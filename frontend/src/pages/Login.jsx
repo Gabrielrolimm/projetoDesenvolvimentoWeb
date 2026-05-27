@@ -11,18 +11,22 @@ export default function Login() {
 
   async function handleLogin(e) {
     e.preventDefault()
+
     setErro('')
     setCarregando(true)
 
     try {
-      const response = await api.post('/auth/login', { email, senha })
+      const response = await api.post('/auth/login', {
+        email,
+        senha,
+      })
 
-      // Salva o usuário no localStorage para usar nas outras páginas
+      localStorage.setItem('token', response.data.token)
       localStorage.setItem('usuario', JSON.stringify(response.data.usuario))
 
       navigate('/chat')
     } catch (error) {
-      if (error.response) {
+      if (error.response?.data?.mensagem) {
         setErro(error.response.data.mensagem)
       } else {
         setErro('Erro ao conectar com o servidor.')
@@ -34,16 +38,16 @@ export default function Login() {
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow p-4 text-center" style={{ width: '380px' }}>
-        <img
-          src="/images/logo.png"
-          alt="Logo SCIJF"
-          className="mb-3 d-block mx-auto"
-          style={{ width: '150px' }}
-        />
-
+      <form
+        className="card shadow p-4 text-center"
+        style={{ width: '380px' }}
+        onSubmit={handleLogin}
+      >
         <h3>SCIJF</h3>
-        <p className="text-muted">Sistema de Comunicação Interna</p>
+
+        <p className="text-muted">
+          Sistema de Comunicação Interna
+        </p>
 
         {erro && (
           <div className="alert alert-danger py-2" role="alert">
@@ -67,13 +71,13 @@ export default function Login() {
         />
 
         <button
-          onClick={handleLogin}
+          type="submit"
           className="btn btn-dark w-100"
           disabled={carregando}
         >
           {carregando ? 'Entrando...' : 'Entrar'}
         </button>
-      </div>
+      </form>
     </div>
   )
 }

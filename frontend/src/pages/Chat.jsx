@@ -83,24 +83,45 @@ export default function Chat() {
   }
 
   async function iniciarConversa(contato) {
+    setErro('')
     setMostrarNovaConversa(false)
+
     const jaExiste = conversas.find((c) => c.contatoId === contato.id)
-    if (jaExiste) { setConversaSelecionada(jaExiste); return }
+
+    if (jaExiste) {
+      setConversaSelecionada(jaExiste)
+      return
+    }
 
     try {
-      await api.post('/mensagens', {
-        remetente_id: usuario.id,
+      const response = await api.post('/mensagens', {
         destinatario_id: contato.id,
         conteudo: '👋',
       })
-      setTimeout(async () => {
-        const response = await api.get(`/mensagens/conversas/${usuario.id}`)
-        setConversas(response.data)
-        const nova = response.data.find((c) => c.contatoId === contato.id)
-        if (nova) setConversaSelecionada(nova)
-      }, 300)
+
+      const mensagemCriada = response.data
+
+      const novaConversa = {
+        conversa_id: mensagemCriada.conversa_id,
+        contatoId: contato.id,
+        nome: contato.nome,
+        email: contato.email,
+        ultimaMensagem: mensagemCriada.conteudo,
+        ultimoEnvio: mensagemCriada.enviado_em,
+        nao_lidas: 0,
+      }
+
+      setConversas((prev) => [novaConversa, ...prev])
+      setConversaSelecionada(novaConversa)
+      setMensagens([mensagemCriada])
     } catch (error) {
-      setErro('Erro ao iniciar conversa.')
+      console.error('Erro ao iniciar conversa:', error)
+
+      if (error.response?.data?.mensagem) {
+        setErro(error.response.data.mensagem)
+      } else {
+        setErro('Erro ao iniciar conversa.')
+      }
     }
   }
 
@@ -133,7 +154,6 @@ export default function Chat() {
       const textoEnviar = novaMensagem.trim() || (arquivoSelecionado ? `📎 ${arquivoSelecionado.name}` : '')
 
       const response = await api.post('/mensagens', {
-        remetente_id: usuario.id,
         destinatario_id: conversaSelecionada.contatoId,
         conteudo: textoEnviar,
       })
@@ -158,13 +178,32 @@ export default function Chat() {
       setArquivoSelecionado(null)
       if (fileInputRef.current) fileInputRef.current.value = ''
 
-      setConversas((prev) =>
-        prev.map((c) =>
+      setConversas((prev) => {
+        const conversaExisteNaLista = prev.some(
+          (c) => c.conversa_id === conversaSelecionada.conversa_id
+        )
+
+        if (!conversaExisteNaLista) {
+          return [
+            {
+              ...conversaSelecionada,
+              ultimaMensagem: textoEnviar,
+              ultimoEnvio: response.data.enviado_em,
+            },
+            ...prev,
+          ]
+        }
+
+        return prev.map((c) =>
           c.conversa_id === conversaSelecionada.conversa_id
-            ? { ...c, ultimaMensagem: textoEnviar }
+            ? {
+              ...c,
+              ultimaMensagem: textoEnviar,
+              ultimoEnvio: response.data.enviado_em,
+            }
             : c
         )
-      )
+      })
     } catch (error) {
       if (error.response) {
         setErro(error.response.data.mensagem)

@@ -34,7 +34,7 @@ export default function Cadastro() {
     try {
       await api.post('/usuarios', { nome, email, senha })
       setSucesso('Cadastro realizado com sucesso!')
-      setTimeout(() => navigate('/'), 2000)
+      setTimeout(() => navigate('/usuarios'), 1500)
     } catch (error) {
       if (error.response) {
         setErro(error.response.data.mensagem)

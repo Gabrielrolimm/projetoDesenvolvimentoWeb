@@ -150,7 +150,6 @@ export default function Chat() {
     if (!conversaSelecionada) return
 
     try {
-      // Envia a mensagem de texto
       const textoEnviar = novaMensagem.trim() || (arquivoSelecionado ? `📎 ${arquivoSelecionado.name}` : '')
 
       const response = await api.post('/mensagens', {
@@ -160,7 +159,6 @@ export default function Chat() {
 
       const novaMsgId = response.data.id
 
-      // Se tiver arquivo, envia o anexo vinculado à mensagem
       if (arquivoSelecionado) {
         const formData = new FormData()
         formData.append('arquivo', arquivoSelecionado)
@@ -243,17 +241,18 @@ export default function Chat() {
   )
 
   return (
-    <div className="d-flex">
+    <div className="d-flex min-vh-100">
       <Sidebar />
 
-      <div className="main-content flex-grow-1">
+      {/* Ajustado a main-content para ocupar altura correta e permitir scroll independente */}
+      <div className="main-content flex-grow-1 d-flex flex-column" style={{ height: '100vh', overflow: 'hidden' }}>
         <div className="topbar">Conversas</div>
 
-        <div className="container-fluid flex-grow-1" style={{ padding: '16px' }}>
-          <div className="row h-100">
+        <div className="container-fluid flex-grow-1" style={{ padding: '16px', overflow: 'hidden' }}>
+          <div className="row h-100 g-3">
 
-            {/* LISTA DE CONVERSAS */}
-            <div className="col-3">
+            {/* LISTA DE CONVERSAS (Oculta no mobile caso haja uma conversa ativa selecionada) */}
+            <div className={`col-12 col-md-4 col-lg-3 d-flex flex-column h-100 ${conversaSelecionada ? 'd-none d-md-flex' : ''}`} style={{ overflowY: 'auto' }}>
               <div className="d-flex gap-2 mb-3">
                 <input
                   className="form-control"
@@ -278,14 +277,14 @@ export default function Chat() {
                     value={buscaUsuario}
                     onChange={(e) => setBuscaUsuario(e.target.value)}
                   />
-                  <ul className="list-group">
+                  <ul className="list-group" style={{ maxHeight: '200px', overflowY: 'auto' }}>
                     {usuariosFiltrados.map((u) => (
                       <li key={u.id} className="list-group-item list-group-item-action" style={{ cursor: 'pointer' }} onClick={() => iniciarConversa(u)}>
                         <div className="d-flex align-items-center">
-                          <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" className="avatar me-2" alt={u.nome} />
-                          <div>
-                            <strong>{u.nome}</strong>
-                            <p className="mb-0" style={{ fontSize: '12px', color: 'gray' }}>{u.email}</p>
+                          <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" className="avatar me-2" style={{ width: '32px', height: '32px', borderRadius: '50%' }} alt={u.nome} />
+                          <div className="text-truncate">
+                            <strong className="d-block text-truncate">{u.nome}</strong>
+                            <p className="mb-0 text-muted text-truncate" style={{ fontSize: '12px' }}>{u.email}</p>
                           </div>
                         </div>
                       </li>
@@ -298,18 +297,18 @@ export default function Chat() {
                 <p className="text-muted text-center">Nenhuma conversa encontrada.</p>
               )}
 
-              <ul className="list-group">
+              <ul className="list-group flex-grow-1" style={{ overflowY: 'auto' }}>
                 {conversasFiltradas.map((conversa) => (
                   <li
                     key={conversa.conversa_id}
-                    className="list-group-item conversation-item d-flex align-items-center"
+                    className="list-group-item conversation-item d-flex align-items-center p-2"
                     onClick={() => setConversaSelecionada(conversa)}
                     style={{ background: conversaSelecionada?.conversa_id === conversa.conversa_id ? '#f0f0f0' : '', cursor: 'pointer' }}
                   >
-                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" className="avatar" alt={conversa.nome} />
-                    <div className="conversation-info flex-grow-1">
-                      <strong>{conversa.nome}</strong>
-                      <p className="last-message">{conversa.ultimaMensagem}</p>
+                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" className="avatar me-2" style={{ width: '40px', height: '40px', borderRadius: '50%' }} alt={conversa.nome} />
+                    <div className="conversation-info flex-grow-1 text-truncate">
+                      <strong className="d-block text-truncate">{conversa.nome}</strong>
+                      <p className="last-message mb-0 text-muted text-truncate" style={{ fontSize: '13px' }}>{conversa.ultimaMensagem}</p>
                     </div>
                     {conversa.nao_lidas > 0 && (
                       <span className="badge bg-danger ms-2">{conversa.nao_lidas}</span>
@@ -319,27 +318,32 @@ export default function Chat() {
               </ul>
             </div>
 
-            {/* ÁREA DO CHAT */}
-            <div className="col-9 d-flex flex-column">
+            {/* ÁREA DO CHAT (Oculta no mobile caso NÃO haja nenhuma conversa selecionada) */}
+            <div className={`col-12 col-md-8 col-lg-9 d-flex flex-column h-100 border rounded bg-white ${!conversaSelecionada ? 'd-none d-md-flex' : ''}`} style={{ overflow: 'hidden' }}>
               {!conversaSelecionada ? (
-                <div className="d-flex justify-content-center align-items-center h-100 text-muted">
+                <div className="d-flex justify-content-center align-items-center h-100 text-muted p-3 text-center">
                   Selecione uma conversa ou clique em ✏️ para iniciar uma nova
                 </div>
               ) : (
                 <>
-                  <div className="d-flex align-items-center mb-2 p-2 border-bottom">
-                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" className="avatar" alt={conversaSelecionada.nome} />
-                    <strong style={{ fontSize: '16px' }}>{conversaSelecionada.nome}</strong>
+                  <div className="d-flex align-items-center mb-2 p-2 border-bottom bg-light">
+                    {/* Botão voltar visível apenas no mobile (d-md-none) */}
+                    <button className="btn btn-sm btn-outline-secondary me-2 d-md-none" onClick={() => setConversaSelecionada(null)}>
+                      ← Voltar
+                    </button>
+                    <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" className="avatar me-2" style={{ width: '36px', height: '36px', borderRadius: '50%' }} alt={conversaSelecionada.nome} />
+                    <strong className="text-truncate" style={{ fontSize: '16px' }}>{conversaSelecionada.nome}</strong>
                   </div>
 
-                  <div className="chat-messages flex-grow-1">
+                  {/* Mensagens com scroll independente */}
+                  <div className="chat-messages flex-grow-1 p-2" style={{ overflowY: 'auto', background: '#f8f9fa' }}>
                     {carregando && <p className="text-center text-muted">Carregando mensagens...</p>}
                     {erro && <div className="alert alert-danger py-2">{erro}</div>}
 
                     {mensagens.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`d-flex align-items-start mb-1 ${msg.remetente_id === usuario.id ? 'justify-content-end' : 'justify-content-start'}`}
+                        className={`d-flex align-items-start mb-2 ${msg.remetente_id === usuario.id ? 'justify-content-end' : 'justify-content-start'}`}
                       >
                         {(isAdmin || msg.remetente_id === usuario.id) && (
                           <button
@@ -350,25 +354,27 @@ export default function Chat() {
                           >🗑</button>
                         )}
 
-                        <div className={msg.remetente_id === usuario.id ? 'msg-user' : 'msg-other'}>
+                        <div
+                          className={msg.remetente_id === usuario.id ? 'bg-dark text-white p-2 rounded-3' : 'bg-secondary text-white p-2 rounded-3'}
+                          style={{ maxWidth: '75%', wordBreak: 'break-word' }}
+                        >
                           <span>{msg.conteudo}</span>
 
-                          {/* Exibe anexo se existir */}
                           {msg.anexo && (
                             <div className="mt-1">
                               <a
                                 href={`http://localhost:3000/anexos/download/${msg.anexo.id}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="btn btn-sm btn-outline-light"
-                                style={{ fontSize: '12px' }}
+                                className="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1"
+                                style={{ fontSize: '11px' }}
                               >
                                 {iconeAnexo(msg.anexo.tipo_mime)} {msg.anexo.nome_arquivo}
                               </a>
                             </div>
                           )}
 
-                          <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>
+                          <div className="text-end" style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>
                             {new Date(msg.enviado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             {msg.remetente_id === usuario.id && (
                               <span className="ms-1">{msg.lido_em ? '✓✓' : '✓'}</span>
@@ -382,8 +388,8 @@ export default function Chat() {
 
                   {/* Preview do arquivo selecionado */}
                   {arquivoSelecionado && (
-                    <div className="d-flex align-items-center gap-2 px-2 pt-2">
-                      <span className="badge bg-secondary">
+                    <div className="d-flex align-items-center gap-2 px-2 pt-2 bg-light">
+                      <span className="badge bg-secondary text-truncate" style={{ maxWidth: '200px' }}>
                         📎 {arquivoSelecionado.name}
                       </span>
                       <button
@@ -393,8 +399,8 @@ export default function Chat() {
                     </div>
                   )}
 
-                  <div className="chat-input d-flex gap-2 p-2 border-top">
-                    <label className="btn btn-outline-secondary mb-0" title="Anexar arquivo">
+                  <div className="chat-input d-flex gap-2 p-2 border-top bg-light">
+                    <label className="btn btn-outline-secondary mb-0 d-flex align-items-center" title="Anexar arquivo">
                       📎
                       <input
                         type="file"

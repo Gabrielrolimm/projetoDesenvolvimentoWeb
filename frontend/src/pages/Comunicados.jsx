@@ -34,7 +34,7 @@ export default function Comunicados() {
     setErro('')
     setSucesso('')
 
-    if (!titulo || !conteudo) {
+    if (!titulo.trim() || !conteudo.trim()) {
       return setErro('Título e conteúdo são obrigatórios.')
     }
 
@@ -73,16 +73,19 @@ export default function Comunicados() {
   }
 
   return (
-    <div className="d-flex">
+    // min-vh-100 garante o preenchimento vertical correto
+    <div className="d-flex min-vh-100">
       <Sidebar />
 
-      <div className="main-content flex-grow-1">
+      {/* overflow-hidden e flex-column evitam quebras de estrutura lateral com o Sidebar */}
+      <div className="main-content flex-grow-1 d-flex flex-column" style={{ overflowX: 'hidden' }}>
         <div className="topbar">Comunicados</div>
 
-        <div className="container mt-4">
+        {/* p-3 ou p-md-4 adicionam espaçamentos confortáveis que adaptam ao mobile */}
+        <div className="container-fluid p-3 p-md-4">
 
-          {erro && <div className="alert alert-danger">{erro}</div>}
-          {sucesso && <div className="alert alert-success">{sucesso}</div>}
+          {erro && <div className="alert alert-danger py-2">{erro}</div>}
+          {sucesso && <div className="alert alert-success py-2">{sucesso}</div>}
 
           {isAdmin && (
             <div className="mb-4">
@@ -94,7 +97,8 @@ export default function Comunicados() {
               </button>
 
               {mostrarForm && (
-                <div className="card mt-3 p-3 shadow-sm">
+                /* Mudamos de <div> para <form> com onSubmit para aceitar envio pelo teclado */
+                <form className="card mt-3 p-3 shadow-sm" onSubmit={publicar}>
                   <h5>Novo Comunicado</h5>
 
                   <div className="mb-3">
@@ -103,6 +107,7 @@ export default function Comunicados() {
                       className="form-control"
                       value={titulo}
                       onChange={(e) => setTitulo(e.target.value)}
+                      required
                     />
                   </div>
 
@@ -113,45 +118,57 @@ export default function Comunicados() {
                       rows={4}
                       value={conteudo}
                       onChange={(e) => setConteudo(e.target.value)}
+                      required
                     />
                   </div>
 
-                  <button className="btn btn-dark" onClick={publicar}>
+                  <button type="submit" className="btn btn-dark">
                     Publicar
                   </button>
-                </div>
+                </form>
               )}
             </div>
           )}
 
-          {carregando ? (
-            <p className="text-muted">Carregando comunicados...</p>
-          ) : comunicados.length === 0 ? (
-            <p className="text-muted">Nenhum comunicado publicado ainda.</p>
-          ) : (
-            comunicados.map((c) => (
-              <div key={c.id} className="card mb-3 shadow-sm">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-start">
-                    <h5 className="mb-1">{c.titulo}</h5>
-                    {isAdmin && (
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => remover(c.id)}
-                      >
-                        Remover
-                      </button>
-                    )}
+          <div className="row">
+            <div className="col-12">
+              {carregando ? (
+                <p className="text-muted">Carregando comunicados...</p>
+              ) : comunicados.length === 0 ? (
+                <p className="text-muted">Nenhum comunicado publicado ainda.</p>
+              ) : (
+                comunicados.map((c) => (
+                  <div key={c.id} className="card mb-3 shadow-sm">
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between align-items-start gap-2">
+                        {/* text-break impede títulos absurdamente longos de estourarem a largura */}
+                        <h5 className="mb-1 text-break">{c.titulo}</h5>
+                        {isAdmin && (
+                          <button
+                            className="btn btn-sm btn-outline-danger flex-shrink-0"
+                            onClick={() => remover(c.id)}
+                          >
+                            Remover
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Adicionado a classe CSS inline 'whiteSpace: pre-wrap' para respeitar os parágrafos digitados */}
+                      <p className="mt-2 text-break" style={{ whiteSpace: 'pre-wrap' }}>
+                        {c.conteudo}
+                      </p>
+
+                      <small className="text-muted d-block mt-2">
+                        Publicado por {c.autor_nome} em{' '}
+                        {new Date(c.publicado_em).toLocaleDateString('pt-BR')}
+                      </small>
+                    </div>
                   </div>
-                  <p className="mt-2">{c.conteudo}</p>
-                  <small className="text-muted">
-                    Publicado por {c.autor_nome} em{' '}
-                    {new Date(c.publicado_em).toLocaleDateString('pt-BR')}
-                  </small>
-                </div>
-              </div>
-            ))
-          )}
+                ))
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

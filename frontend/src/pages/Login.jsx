@@ -12,12 +12,17 @@ export default function Login() {
   async function handleLogin(e) {
     e.preventDefault()
 
+    // Validação básica antes de enviar a requisição
+    if (!email.trim() || !senha.trim()) {
+      return setErro('Por favor, preencha todos os campos.')
+    }
+
     setErro('')
     setCarregando(true)
 
     try {
       const response = await api.post('/auth/login', {
-        email,
+        email: email.trim(),
         senha,
       })
 
@@ -37,10 +42,13 @@ export default function Login() {
   }
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
+    // min-vh-100 impede problemas com o teclado do mobile; p-3 adiciona margem de respiro nas bordas
+    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
+
+      {/* Trocamos a largura fixa por classes fluidas do Bootstrap + maxWidth */}
       <form
-        className="card shadow p-4 text-center"
-        style={{ width: '380px' }}
+        className="card shadow p-4 text-center w-100"
+        style={{ maxWidth: '380px' }}
         onSubmit={handleLogin}
       >
         <h3>SCIJF</h3>
@@ -56,10 +64,12 @@ export default function Login() {
         )}
 
         <input
+          type="email"
           className="form-control mb-3"
           placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <input
@@ -68,6 +78,7 @@ export default function Login() {
           placeholder="Senha"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
+          required
         />
 
         <button

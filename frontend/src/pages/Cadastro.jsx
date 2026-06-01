@@ -17,7 +17,7 @@ export default function Cadastro() {
     setErro('')
     setSucesso('')
 
-    if (!nome || !email || !senha || !confirmarSenha) {
+    if (!nome.trim() || !email.trim() || !senha || !confirmarSenha) {
       return setErro('Preencha todos os campos.')
     }
 
@@ -32,7 +32,11 @@ export default function Cadastro() {
     setCarregando(true)
 
     try {
-      await api.post('/usuarios', { nome, email, senha })
+      await api.post('/usuarios', {
+        nome: nome.trim(),
+        email: email.trim(),
+        senha
+      })
       setSucesso('Cadastro realizado com sucesso!')
       setTimeout(() => navigate('/usuarios'), 1500)
     } catch (error) {
@@ -47,31 +51,35 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
-      <div className="card shadow p-4 text-center" style={{ width: '400px' }}>
+    // min-vh-100 + p-3 evitam problemas com teclado móvel e dão margem de respiro
+    <div className="d-flex justify-content-center align-items-center min-vh-100 p-3">
+      {/* Modificado para <form> para aceitar envio com "Enter" e adicionado largura fluida */}
+      <form
+        className="card shadow p-4 text-center w-100"
+        style={{ maxWidth: '400px' }}
+        onSubmit={handleCadastro}
+      >
         <h3>SCIJF</h3>
         <p className="text-muted">Criar nova conta</p>
 
-        {erro && (
-          <div className="alert alert-danger py-2">{erro}</div>
-        )}
-
-        {sucesso && (
-          <div className="alert alert-success py-2">{sucesso}</div>
-        )}
+        {erro && <div className="alert alert-danger py-2">{erro}</div>}
+        {sucesso && <div className="alert alert-success py-2">{sucesso}</div>}
 
         <input
           className="form-control mb-3"
           placeholder="Nome completo"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
+          required
         />
 
         <input
+          type="email"
           className="form-control mb-3"
           placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <input
@@ -80,6 +88,7 @@ export default function Cadastro() {
           placeholder="Senha"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
+          required
         />
 
         <input
@@ -88,10 +97,11 @@ export default function Cadastro() {
           placeholder="Confirmar senha"
           value={confirmarSenha}
           onChange={(e) => setConfirmarSenha(e.target.value)}
+          required
         />
 
         <button
-          onClick={handleCadastro}
+          type="submit"
           className="btn btn-dark w-100 mb-3"
           disabled={carregando}
         >
@@ -102,7 +112,7 @@ export default function Cadastro() {
           Já tem conta?{' '}
           <Link to="/">Fazer login</Link>
         </p>
-      </div>
+      </form>
     </div>
   )
 }

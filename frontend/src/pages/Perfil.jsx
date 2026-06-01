@@ -12,9 +12,9 @@ export default function Perfil() {
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
   const [carregando, setCarregando] = useState(false)
+
   const navigate = useNavigate()
 
-  // Busca os dados do usuário logado ao carregar a página
   useEffect(() => {
     const usuarioSalvo = JSON.parse(localStorage.getItem('usuario'))
 
@@ -42,7 +42,8 @@ export default function Perfil() {
     setSucesso('')
 
     if (novaSenha && novaSenha !== confirmarSenha) {
-      return setErro('As novas senhas não coincidem.')
+      setErro('As novas senhas não coincidem.')
+      return
     }
 
     const usuarioSalvo = JSON.parse(localStorage.getItem('usuario'))
@@ -56,7 +57,6 @@ export default function Perfil() {
         novaSenha: novaSenha || undefined,
       })
 
-      // Atualiza os dados no localStorage
       localStorage.setItem('usuario', JSON.stringify(response.data.usuario))
 
       setSucesso('Perfil atualizado com sucesso!')
@@ -81,19 +81,48 @@ export default function Perfil() {
   }
 
   return (
-    <div className="d-flex">
+    <div className="d-flex" style={{ height: '100vh', overflow: 'hidden' }}>
+      
+      {/* Sidebar fixa */}
       <Sidebar />
 
-      <div className="main-content flex-grow-1 d-flex flex-column">
-        <div className="topbar">Meu Perfil</div>
+      {/* Conteúdo principal com scroll */}
+      <div
+        className="main-content flex-grow-1"
+        style={{
+          height: '100vh',
+          overflowY: 'auto',
+          backgroundColor: '#f8f9fa',
+        }}
+      >
+        {/* Topbar */}
+        <div
+          className="topbar"
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+          }}
+        >
+          Meu Perfil
+        </div>
 
-        <div className="d-flex justify-content-center align-items-center flex-grow-1">
-          <div className="card shadow-sm p-4" style={{ width: '400px' }}>
+        {/* Área do formulário (SEM centralização vertical) */}
+        <div className="container py-4 d-flex justify-content-center">
+          
+          <div className="card shadow-sm p-4" style={{ width: '420px' }}>
+
             <h4 className="text-center mb-4">Informações do Perfil</h4>
 
-            {erro && <div className="alert alert-danger py-2">{erro}</div>}
-            {sucesso && <div className="alert alert-success py-2">{sucesso}</div>}
+            {erro && (
+              <div className="alert alert-danger py-2">{erro}</div>
+            )}
 
+            {sucesso && (
+              <div className="alert alert-success py-2">{sucesso}</div>
+            )}
+
+            {/* Nome */}
             <div className="mb-3">
               <label className="form-label">Nome</label>
               <input
@@ -103,6 +132,7 @@ export default function Perfil() {
               />
             </div>
 
+            {/* Email */}
             <div className="mb-3">
               <label className="form-label">Email</label>
               <input
@@ -115,10 +145,12 @@ export default function Perfil() {
             <hr />
 
             <h5 className="text-center">Alterar Senha</h5>
+
             <p className="text-muted text-center" style={{ fontSize: '13px' }}>
               Preencha apenas se quiser alterar a senha
             </p>
 
+            {/* Senha atual */}
             <div className="mb-3">
               <label className="form-label">Senha atual</label>
               <input
@@ -129,6 +161,7 @@ export default function Perfil() {
               />
             </div>
 
+            {/* Nova senha */}
             <div className="mb-3">
               <label className="form-label">Nova senha</label>
               <input
@@ -139,6 +172,7 @@ export default function Perfil() {
               />
             </div>
 
+            {/* Confirmar senha */}
             <div className="mb-3">
               <label className="form-label">Confirmar nova senha</label>
               <input
@@ -149,6 +183,7 @@ export default function Perfil() {
               />
             </div>
 
+            {/* Botão salvar */}
             <button
               className="btn btn-dark w-100 mb-3"
               onClick={handleSalvar}
@@ -157,11 +192,18 @@ export default function Perfil() {
               {carregando ? 'Salvando...' : 'Salvar alterações'}
             </button>
 
-            <hr />
+            <hr/>
 
-            <button className="btn btn-danger w-100" onClick={handleSair}>
+            {/* Logout */}
+            <button
+              className="btn btn-danger w-100"
+              onClick={handleSair}
+            >
               Sair da conta
             </button>
+
+            <hr/>
+
           </div>
         </div>
       </div>

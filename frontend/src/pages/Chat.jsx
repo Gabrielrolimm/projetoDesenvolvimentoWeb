@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Sidebar from '../components/Sidebar'
-import api from '../services/api'
+import api, { getDownloadUrl } from '../services/api'
 
 const TIPOS_PERMITIDOS = [
   'application/pdf',
@@ -363,7 +363,7 @@ export default function Chat() {
                           {msg.anexo && (
                             <div className="mt-1">
                               <a
-                                href={`http://localhost:3000/anexos/download/${msg.anexo.id}`}
+                                href={getDownloadUrl(msg.anexo.id)}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1"
